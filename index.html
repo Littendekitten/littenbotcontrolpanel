@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OIO LittenBot Controller</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         body {
-            background-color: #FFDE4D; /* Lekker vrolijk geel */
+            background-color: #FFDE4D; /* Geel */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
@@ -25,31 +24,60 @@
         .grid {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             flex-grow: 1;
             justify-content: center;
         }
         button {
             background-color: #ffffff;
             border: 4px solid #333;
-            border-radius: 25px;
-            padding: 20px;
-            font-size: 1.8rem;
+            border-radius: 20px;
+            padding: 15px;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #333;
-            box-shadow: 0 8px 0 #333;
+            box-shadow: 0 6px 0 #333;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
+            transition: all 0.2s ease;
         }
-        button:active {
+        button:active:not(:disabled) {
             transform: translateY(4px);
-            box-shadow: 0 4px 0 #333;
+            box-shadow: 0 2px 0 #333;
         }
-        /* Verschillende kleurtjes voor de knoppen van Lorelei */
+        /* Als knoppen geblokkeerd zijn */
+        button:disabled {
+            background-color: #888888 !important;
+            color: #555555 !important;
+            border-color: #555555 !important;
+            box-shadow: 0 6px 0 #555555 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Kleurtjes voor de knoppen */
         .btn-dans { background-color: #FF6B6B; color: white; }
+        .btn-oiodans { background-color: #FF8AAE; color: white; }
         .btn-papa { background-color: #4D96FF; color: white; }
         .btn-mama { background-color: #6BCB77; color: white; }
+        .btn-naaroio { background-color: #38E54D; color: white; }
         .btn-rug { background-color: #B983FF; color: white; }
+        
+        /* De Volg OIO knop standaard */
+        .btn-volg { background-color: #FF9F29; color: white; }
+
+        /* Vuur Aura Animatie */
+        @keyframes vuurGloed {
+            0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 6px 0 #333; }
+            50% { box-shadow: 0 0 25px #ff4500, 0 0 45px #ff8c00, 0 0 60px #ff0000, 0 6px 0 #333; }
+            100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 6px 0 #333; }
+        }
+        .vuur-aura {
+            animation: vuurGloed 0.8s infinite alternate;
+            background: linear-gradient(45deg, #ff4500, #ff8c00, #ff0000) !important;
+            border-color: #ff4500 !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -57,17 +85,20 @@
     <h1>🤖 LittenBot van OIO! 🤖</h1>
     
     <div class="grid">
-        <button class="btn-dans" onclick="stuur('dans')">💃 Robotdans!</button>
-        <button class="btn-papa" onclick="stuur('papa')">👨 Naar Papa</button>
-        <button class="btn-mama" onclick="stuur('mama')">👩 Naar Mama</button>
-        <button class="btn-rug" onclick="stuur('rug')">🦖 Op je rug!</button>
+        <button class="btn-dans" id="btn-dans" onclick="stuur('dans')">💃 Robotdans!</button>
+        <button class="btn-oiodans" id="btn-oiodans" onclick="stuur('oio_dans')">✨ Doe OIO dans</button>
+        <button class="btn-papa" id="btn-papa" onclick="stuur('papa')">👨 Naar Papa</button>
+        <button class="btn-mama" id="btn-mama" onclick="stuur('mama')">👩 Naar Mama</button>
+        <button class="btn-naaroio" id="btn-naaroio" onclick="stuur('naar_oio')">🏃 Ga naar OIO</button>
+        <button class="btn-rug" id="btn-rug" onclick="stuur('rug')">🦖 Op je rug!</button>
+        
+        <button class="btn-volg" id="btn-volg" onclick="toggleVolg()">🔥 Volg OIO</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 
-        // Jouw unieke Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB5wRKFeQCXalqe61weyHDo6hq9THA6UT8",
             authDomain: "littenbot-app.firebaseapp.com",
@@ -82,14 +113,47 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Functie om commando naar de database te sturen
+        let isVolgend = false;
+
+        // Functie om commando te sturen
         window.stuur = function(actie) {
             set(ref(db, 'littenbot/commando'), {
                 actie: actie,
-                tijd: Date.now() // Zorgt dat de database merkt dat er opnieuw geklikt is
+                tijd: Date.now()
             });
+        };
+
+        // Speciale functie voor de Volg OIO knop
+        window.toggleVolg = function() {
+            const volgBtn = document.getElementById('btn-volg');
+            const alleKnoppen = ['btn-dans', 'btn-oiodans', 'btn-papa', 'btn-mama', 'btn-naaroio', 'btn-rug'];
+
+            if (!isVolgend) {
+                // Nu gaan volgen!
+                isVolgend = true;
+                volgBtn.innerText = "🛑 Stop met OIO volgen";
+                volgBtn.classList.add('vuur-aura');
+
+                // Blokkeer alle andere knoppen
+                alleKnoppen.forEach(id => {
+                    document.getElementById(id).disabled = true;
+                });
+
+                stuur('volg_oio');
+            } else {
+                // Stoppen met volgen!
+                isVolgend = false;
+                volgBtn.innerText = "🔥 Volg OIO";
+                volgBtn.classList.remove('vuur-aura');
+
+                // Deblokkeer alle andere knoppen
+                alleKnoppen.forEach(id => {
+                    document.getElementById(id).disabled = false;
+                });
+
+                stuur('stop_volg_oio');
+            }
         };
     </script>
 </body>
 </html>
-
