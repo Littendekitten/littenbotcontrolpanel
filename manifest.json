@@ -1,0 +1,16 @@
+{
+  "name": "OIO LittenBot Controller",
+  "short_name": "LittenBot",
+  "description": "Bedieningspaneel om LittenBot commando's te geven.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1B1B3A",
+  "theme_color": "#1B1B3A",
+  "icons": [
+    { "src": "favicon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "favicon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+
