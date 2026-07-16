@@ -1,98 +1,325 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIO LittenBot Controller</title>
-    <style>
-        body {
-            background-color: #FFDE4D; /* Geel */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #333;
-            font-size: 2.2rem;
-            margin: 10px 0;
-        }
-        .grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-grow: 1;
-            justify-content: center;
-        }
-        button {
-            background-color: #ffffff;
-            border: 4px solid #333;
-            border-radius: 20px;
-            padding: 15px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 6px 0 #333;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        button:active:not(:disabled) {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #333;
-        }
-        /* Als knoppen geblokkeerd zijn */
-        button:disabled {
-            background-color: #888888 !important;
-            color: #555555 !important;
-            border-color: #555555 !important;
-            box-shadow: 0 6px 0 #555555 !important;
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OIO LittenBot Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --deep: #1B1B3A;
+        --panel: #262659;
+        --panel-light: #32306b;
+        --yellow: #FFDE4D;
+        --text: #F5F3FF;
+        --text-dim: #9C9AC9;
 
-        /* Kleurtjes voor de knoppen */
-        .btn-dans { background-color: #FF6B6B; color: white; }
-        .btn-oiodans { background-color: #FF8AAE; color: white; }
-        .btn-papa { background-color: #4D96FF; color: white; }
-        .btn-mama { background-color: #6BCB77; color: white; }
-        .btn-naaroio { background-color: #38E54D; color: white; }
-        .btn-rug { background-color: #B983FF; color: white; }
-        
-        /* De Volg OIO knop standaard */
-        .btn-volg { background-color: #FF9F29; color: white; }
+        --dans: #FF6B6B;
+        --oiodans: #FF8AAE;
+        --papa: #4D96FF;
+        --mama: #6BCB77;
+        --naaroio: #38E54D;
+        --rug: #B983FF;
+        --volg1: #FF6A00;
+        --volg2: #FFB800;
+    }
 
-        /* Vuur Aura Animatie */
-        @keyframes vuurGloed {
-            0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 6px 0 #333; }
-            50% { box-shadow: 0 0 25px #ff4500, 0 0 45px #ff8c00, 0 0 60px #ff0000, 0 6px 0 #333; }
-            100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 6px 0 #333; }
-        }
-        .vuur-aura {
-            animation: vuurGloed 0.8s infinite alternate;
-            background: linear-gradient(45deg, #ff4500, #ff8c00, #ff0000) !important;
-            border-color: #ff4500 !important;
-            color: white !important;
-            transform: scale(1.05);
-        }
-    </style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at 15% 10%, rgba(255,222,77,0.10), transparent 40%),
+            radial-gradient(circle at 85% 90%, rgba(185,131,255,0.14), transparent 45%),
+            var(--deep);
+        font-family: 'Nunito', sans-serif;
+        color: var(--text);
+        padding: 18px 16px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* ---------- Header / status ---------- */
+    .header {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    h1 {
+        font-family: 'Fredoka', sans-serif;
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: var(--yellow);
+        margin: 4px 0 0;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    .status-pill {
+        font-family: 'Fredoka', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        background: var(--panel);
+        border: 2px solid var(--panel-light);
+        border-radius: 999px;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--naaroio);
+        box-shadow: 0 0 8px var(--naaroio);
+    }
+    .status-pill.volgend {
+        border-color: var(--volg1);
+        background: linear-gradient(90deg, rgba(255,106,0,0.18), rgba(255,184,0,0.18));
+    }
+    .status-pill.volgend .status-dot {
+        background: var(--volg1);
+        box-shadow: 0 0 10px var(--volg1);
+        animation: pulseDot 0.9s infinite ease-in-out;
+    }
+    @keyframes pulseDot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.4); opacity: 0.6; }
+    }
+
+    /* ---------- Robot face (signature element) ---------- */
+    .bot-stage {
+        width: 148px;
+        height: 148px;
+        border-radius: 32px;
+        background: linear-gradient(160deg, var(--panel-light), var(--panel));
+        border: 3px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(0,0,0,0.35);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .bot-face {
+        width: 92px;
+        height: 70px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .eyes { display: flex; gap: 18px; }
+    .eye {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--yellow);
+        box-shadow: 0 0 10px rgba(255,222,77,0.7);
+        transition: all 0.25s ease;
+        animation: blink 4.5s infinite;
+    }
+    @keyframes blink {
+        0%, 92%, 100% { transform: scaleY(1); }
+        95% { transform: scaleY(0.15); }
+    }
+    .mouth {
+        width: 40px;
+        height: 14px;
+        border-radius: 0 0 20px 20px;
+        border-bottom: 4px solid var(--yellow);
+        transition: all 0.25s ease;
+    }
+    .antenna {
+        position: absolute;
+        top: -14px;
+        width: 6px;
+        height: 16px;
+        background: var(--panel-light);
+        border-radius: 3px;
+    }
+    .antenna::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -3px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--yellow);
+        box-shadow: 0 0 8px var(--yellow);
+    }
+
+    /* face states */
+    .bot-stage.mood-dance { animation: rock 0.35s infinite alternate; box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 0 26px rgba(255,107,107,0.5); }
+    .bot-stage.mood-dance .eye { background: var(--dans); box-shadow: 0 0 10px var(--dans); }
+    .bot-stage.mood-dance .mouth { border-color: var(--dans); border-radius: 20px; height: 18px; }
+    @keyframes rock { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+
+    .bot-stage.mood-sparkle { box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 0 30px rgba(255,138,174,0.6); }
+    .bot-stage.mood-sparkle .eye { background: var(--oiodans); box-shadow: 0 0 12px var(--oiodans); transform: scale(1.15); }
+    .bot-stage.mood-sparkle .mouth { border-color: var(--oiodans); border-radius: 20px; }
+
+    .bot-stage.mood-happy .eye { background: var(--mama); }
+    .bot-stage.mood-happy .mouth { border-color: var(--mama); border-radius: 20px; }
+
+    .bot-stage.mood-goto { box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 0 24px rgba(56,229,77,0.5); }
+    .bot-stage.mood-goto .eye { background: var(--naaroio); }
+    .bot-stage.mood-goto .mouth { width: 26px; border-color: var(--naaroio); }
+
+    .bot-stage.mood-flip .eye { background: var(--rug); }
+    .bot-stage.mood-flip .mouth { border-color: var(--rug); border-radius: 20px 20px 0 0; border-bottom: none; border-top: 4px solid var(--rug); height: 10px; }
+
+    .bot-stage.mood-follow {
+        animation: followGlow 0.8s infinite alternate;
+    }
+    .bot-stage.mood-follow .eye { background: var(--volg1); box-shadow: 0 0 14px var(--volg1); }
+    .bot-stage.mood-follow .mouth { border-color: var(--volg1); border-radius: 20px; width: 44px; }
+    @keyframes followGlow {
+        from { box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 0 16px rgba(255,106,0,0.5); }
+        to   { box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 0 40px rgba(255,184,0,0.85); }
+    }
+
+    .last-action {
+        min-height: 22px;
+        font-family: 'Fredoka', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-dim);
+        text-align: center;
+        transition: opacity 0.3s ease;
+    }
+
+    /* ---------- Buttons ---------- */
+    .grid {
+        width: 100%;
+        max-width: 480px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    button {
+        font-family: 'Fredoka', sans-serif;
+        border: none;
+        border-radius: 20px;
+        padding: 18px 10px;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 6px 0 rgba(0,0,0,0.28);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+    button .emoji { font-size: 1.8rem; line-height: 1; }
+
+    button:active:not(:disabled) {
+        transform: translateY(5px);
+        box-shadow: 0 1px 0 rgba(0,0,0,0.28);
+    }
+
+    button:disabled {
+        background: #4a4870 !important;
+        color: #8b89ad !important;
+        box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-dans     { background: var(--dans); }
+    .btn-oiodans  { background: var(--oiodans); }
+    .btn-papa     { background: var(--papa); }
+    .btn-mama     { background: var(--mama); }
+    .btn-naaroio  { background: var(--naaroio); }
+    .btn-rug      { background: var(--rug); }
+
+    .btn-volg {
+        grid-column: 1 / -1;
+        background: linear-gradient(90deg, var(--volg1), var(--volg2));
+        font-size: 1.25rem;
+        padding: 20px 10px;
+    }
+
+    @keyframes vuurGloed {
+        0%   { box-shadow: 0 0 12px #ff4500, 0 0 22px #ff8c00, 0 6px 0 rgba(0,0,0,0.28); }
+        50%  { box-shadow: 0 0 26px #ff4500, 0 0 46px #ff8c00, 0 0 60px #ff0000, 0 6px 0 rgba(0,0,0,0.28); }
+        100% { box-shadow: 0 0 12px #ff4500, 0 0 22px #ff8c00, 0 6px 0 rgba(0,0,0,0.28); }
+    }
+    .vuur-aura {
+        animation: vuurGloed 0.8s infinite alternate;
+        transform: scale(1.03);
+    }
+
+    @media (max-width: 340px) {
+        .grid { grid-template-columns: 1fr; }
+        .btn-volg { grid-column: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+    }
+</style>
 </head>
 <body>
 
-    <h1>🤖 LittenBot van OIO! 🤖</h1>
-    
+    <div class="header">
+        <div class="bot-stage" id="bot-stage">
+            <div class="antenna"></div>
+            <div class="bot-face">
+                <div class="eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+                <div class="mouth"></div>
+            </div>
+        </div>
+        <h1>🤖 LittenBot van OIO!</h1>
+        <div class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span id="status-text">Klaar om te spelen!</span>
+        </div>
+        <div class="last-action" id="last-action">Kies een knop hieronder 👇</div>
+    </div>
+
     <div class="grid">
-        <button class="btn-dans" id="btn-dans" onclick="stuur('dans')">💃 Robotdans!</button>
-        <button class="btn-oiodans" id="btn-oiodans" onclick="stuur('oio_dans')">✨ Doe OIO dans</button>
-        <button class="btn-papa" id="btn-papa" onclick="stuur('papa')">👨 Naar Papa</button>
-        <button class="btn-mama" id="btn-mama" onclick="stuur('mama')">👩 Naar Mama</button>
-        <button class="btn-naaroio" id="btn-naaroio" onclick="stuur('naar_oio')">🏃 Ga naar OIO</button>
-        <button class="btn-rug" id="btn-rug" onclick="stuur('rug')">🦖 Op je rug!</button>
-        
-        <button class="btn-volg" id="btn-volg" onclick="toggleVolg()">🔥 Volg OIO</button>
+        <button class="btn-dans" id="btn-dans" onclick="stuur('dans', 'mood-dance', 'Robotdans! 💃')">
+            <span class="emoji">💃</span>Robotdans!
+        </button>
+        <button class="btn-oiodans" id="btn-oiodans" onclick="stuur('oio_dans', 'mood-sparkle', 'OIO dans! ✨')">
+            <span class="emoji">✨</span>Doe OIO dans
+        </button>
+        <button class="btn-papa" id="btn-papa" onclick="stuur('papa', 'mood-happy', 'Op weg naar papa! 👨')">
+            <span class="emoji">👨</span>Naar Papa
+        </button>
+        <button class="btn-mama" id="btn-mama" onclick="stuur('mama', 'mood-happy', 'Op weg naar mama! 👩')">
+            <span class="emoji">👩</span>Naar Mama
+        </button>
+        <button class="btn-naaroio" id="btn-naaroio" onclick="stuur('naar_oio', 'mood-goto', 'Op weg naar OIO! 🏃')">
+            <span class="emoji">🏃</span>Ga naar OIO
+        </button>
+        <button class="btn-rug" id="btn-rug" onclick="stuur('rug', 'mood-flip', 'Op je rug! 🦖')">
+            <span class="emoji">🦖</span>Op je rug!
+        </button>
+
+        <button class="btn-volg" id="btn-volg" onclick="toggleVolg()">
+            <span class="emoji">🔥</span>Volg OIO
+        </button>
     </div>
 
     <script type="module">
@@ -114,27 +341,53 @@
         const db = getDatabase(app);
 
         let isVolgend = false;
+        let moodTimeout = null;
 
-        // Functie om commando te sturen
-        window.stuur = function(actie) {
+        const botStage = document.getElementById('bot-stage');
+        const lastAction = document.getElementById('last-action');
+        const allMoods = ['mood-dance', 'mood-sparkle', 'mood-happy', 'mood-goto', 'mood-flip', 'mood-follow'];
+
+        function setMood(mood, duration) {
+            botStage.classList.remove(...allMoods);
+            if (mood) botStage.classList.add(mood);
+            if (moodTimeout) clearTimeout(moodTimeout);
+            if (duration) {
+                moodTimeout = setTimeout(() => botStage.classList.remove(mood), duration);
+            }
+        }
+
+        // Functie om commando te sturen (met visuele feedback)
+        window.stuur = function(actie, mood, boodschap) {
             set(ref(db, 'littenbot/commando'), {
                 actie: actie,
                 tijd: Date.now()
             });
+
+            if (mood) setMood(mood, 2200);
+            if (boodschap) {
+                lastAction.textContent = boodschap;
+                lastAction.style.opacity = 0;
+                requestAnimationFrame(() => { lastAction.style.opacity = 1; });
+            }
         };
 
         // Speciale functie voor de Volg OIO knop
         window.toggleVolg = function() {
             const volgBtn = document.getElementById('btn-volg');
+            const statusPill = document.getElementById('status-pill');
+            const statusText = document.getElementById('status-text');
             const alleKnoppen = ['btn-dans', 'btn-oiodans', 'btn-papa', 'btn-mama', 'btn-naaroio', 'btn-rug'];
 
             if (!isVolgend) {
                 // Nu gaan volgen!
                 isVolgend = true;
-                volgBtn.innerText = "🛑 Stop met OIO volgen";
+                volgBtn.innerHTML = '<span class="emoji">🛑</span>Stop met OIO volgen';
                 volgBtn.classList.add('vuur-aura');
+                statusPill.classList.add('volgend');
+                statusText.textContent = 'Aan het volgen...';
+                setMood('mood-follow', null);
+                lastAction.textContent = 'LittenBot volgt OIO! 🔥';
 
-                // Blokkeer alle andere knoppen
                 alleKnoppen.forEach(id => {
                     document.getElementById(id).disabled = true;
                 });
@@ -143,10 +396,13 @@
             } else {
                 // Stoppen met volgen!
                 isVolgend = false;
-                volgBtn.innerText = "🔥 Volg OIO";
+                volgBtn.innerHTML = '<span class="emoji">🔥</span>Volg OIO';
                 volgBtn.classList.remove('vuur-aura');
+                statusPill.classList.remove('volgend');
+                statusText.textContent = 'Klaar om te spelen!';
+                setMood(null, null);
+                lastAction.textContent = 'Gestopt met volgen';
 
-                // Deblokkeer alle andere knoppen
                 alleKnoppen.forEach(id => {
                     document.getElementById(id).disabled = false;
                 });
